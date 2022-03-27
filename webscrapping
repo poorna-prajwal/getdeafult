@@ -1,0 +1,46 @@
+from bs4 import BeautifulSoup
+import pandas as pd
+from selenium import webdriver
+from selenium.webdriver.common.by import By
+from selenium.webdriver.common.keys import Keys
+from selenium.webdriver.support.ui import WebDriverWait
+from webdriver_manager.chrome import ChromeDriverManager
+import time
+pd.set_option("display.max_rows", None)
+driver = webdriver.Chrome(executable_path=r'C:\Users\Poorna Prajwal\AppData\Roaming\Microsoft\Windows\Start Menu\Programs\chromedriver.exe')
+driver.get('https://clutch.co/')
+name=['Mobile App Development']
+driver.find_element(By.ID, 'services').send_keys(str(name[0])+Keys.ENTER)
+time.sleep(2)
+driver.find_element(By.ID, 'submit').click()
+driver.find_element(By.ID, 'submit').click()
+soup =BeautifulSoup(driver.page_source,'html.parser')
+gdp=soup.find_all('div',class_="provider-info col-md-10")
+gdp1=soup.find_all('div',class_="col-md-3 provider-info__details")
+gdp2=soup.find_all('div',class_="provider-detail col-md-2")
+Company_Name=[]
+Website=[]
+Location=[]
+Contact_info=[]
+Rating=[]
+Review_count=[]
+Hourly_Rate=[]
+Min_project_size=[]
+for i in range(0,len(gdp)):
+    info=gdp[i]
+    info1=gdp1[i]
+    info2=gdp2[i]
+    Company_Name.append(info.h3.a.text.strip())
+    Rating.append(info.span.text.split()[0])
+    Review_count.append(info.find('a',class_='reviews-link sg-rating__reviews').text.split()[0])
+    Min_project_size.append(info1.find(class_='list-item block_tag custom_popover').text.split()[0])
+    Hourly_Rate.append(info1.find(class_='list-item custom_popover').text.replace('\n',''))
+    Location.append(info.find('span',class_='locality').text)
+df=pd.DataFrame()
+df['Company Name']=Company_Name
+df['Rating']=Rating
+df['Review Count']=Review_count
+df['Min Project Size']=Min_project_size
+df['Hourly Rate']=Hourly_Rate
+df['Location']=Location
+df.to_csv('Webscraped.csv')
